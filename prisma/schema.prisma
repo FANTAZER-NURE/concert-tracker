@@ -1,0 +1,137 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum SourceType {
+  EVENT_API
+  WEBSITE
+  SOCIAL
+  SEARCH
+  FEED
+}
+
+model Artist {
+  id          String        @id @default(cuid())
+  name        String        @unique
+  isActive    Boolean       @default(true)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  sources     Source[]
+  events      Event[]
+  sourceItems SourceEntry[]
+  subscriptions Subscription[]
+}
+
+model Source {
+  id         String        @id @default(cuid())
+  artistId   String?
+  type       SourceType
+  name       String
+  url        String?
+  externalId String?
+  isActive   Boolean       @default(true)
+  createdAt  DateTime      @default(now())
+  updatedAt  DateTime      @updatedAt
+  artist     Artist?       @relation(fields: [artistId], references: [id])
+  items      SourceEntry[]
+
+  @@index([artistId])
+}
+
+model SourceEntry {
+  id          String    @id @default(cuid())
+  sourceId    String
+  artistId    String?
+  eventId     String?
+  url         String
+  title       String?
+  externalId  String?
+  publishedAt DateTime?
+  ingestedAt  DateTime  @default(now())
+  contentHash String?
+  confidence  Float?
+  source      Source    @relation(fields: [sourceId], references: [id])
+  artist      Artist?   @relation(fields: [artistId], references: [id])
+  event       Event?    @relation(fields: [eventId], references: [id])
+
+  @@index([sourceId])
+  @@index([artistId])
+  @@index([eventId])
+  @@unique([sourceId, externalId])
+}
+
+model Venue {
+  id        String   @id @default(cuid())
+  name      String
+  city      String?
+  country   String?
+  continent String?
+  latitude  Float?
+  longitude Float?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  events    Event[]
+}
+
+model Event {
+  id         String       @id @default(cuid())
+  artistId   String
+  venueId    String?
+  name       String?
+  dateText   String?
+  startAt    DateTime?
+  endAt      DateTime?
+  timezone   String?
+  city       String?
+  country    String?
+  continent  String?
+  ticketUrl  String?
+  priceMin   Decimal?     @db.Decimal(10, 2)
+  priceMax   Decimal?     @db.Decimal(10, 2)
+  currency   String?
+  confidence Float?
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime     @updatedAt
+  artist     Artist       @relation(fields: [artistId], references: [id])
+  venue      Venue?       @relation(fields: [venueId], references: [id])
+  sources    SourceEntry[]
+
+  @@index([artistId])
+  @@index([startAt])
+}
+
+model User {
+  id           String         @id @default(cuid())
+  telegramId   String         @unique
+  username     String?
+  firstName    String?
+  lastName     String?
+  languageCode String?
+  isActive     Boolean        @default(true)
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+  subscriptions Subscription[]
+}
+
+model Subscription {
+  id        String   @id @default(cuid())
+  userId    String
+  artistId  String
+  continent String?
+  country   String?
+  city      String?
+  radiusKm  Int?
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id])
+  artist    Artist   @relation(fields: [artistId], references: [id])
+
+  @@index([userId])
+  @@index([artistId])
+  @@unique([userId, artistId, continent, country, city, radiusKm])
+}
