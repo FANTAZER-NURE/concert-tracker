@@ -63,6 +63,8 @@ export class IngestionService {
         await this.pollGenericSource(source);
       }
     }
+
+    await this.processSourceEntries();
   }
 
   private async pollTicketmaster(source: {
@@ -108,42 +110,16 @@ export class IngestionService {
         continue;
       }
 
-      let eventId: string | null = null;
-      const hasRequiredFields =
-        item.title &&
-        (item.startAt || item.dateText) &&
-        item.city &&
-        item.country;
-
-      if (hasRequiredFields) {
-        const event = await this.prismaService.event.create({
-          data: {
-            artistId: source.artistId,
-            name: item.title,
-            startAt: item.startAt ?? undefined,
-            dateText: item.dateText ?? undefined,
-            timezone: item.timezone ?? undefined,
-            city: item.city,
-            country: item.country,
-            ticketUrl: item.ticketUrl ?? undefined,
-            priceMin: item.priceMin ?? undefined,
-            priceMax: item.priceMax ?? undefined,
-            currency: item.currency ?? undefined,
-            confidence: 0.9,
-          },
-        });
-        eventId = event.id;
-      }
-
       await this.prismaService.sourceEntry.create({
         data: {
           sourceId: source.id,
           artistId: source.artistId,
-          eventId,
           url: item.url,
           externalId: item.externalId,
           title: item.title,
+          rawData: item as any,
           confidence: 0.9,
+          processed: false,
         },
       });
     }
@@ -173,29 +149,76 @@ export class IngestionService {
 
     const title = `Pending event from ${source.name}`;
     const url = source.url ?? source.externalId ?? source.name;
-    let eventId: string | null = null;
-
-    if (source.artistId) {
-      const event = await this.prismaService.event.create({
-        data: {
-          artistId: source.artistId,
-          name: title,
-          confidence: 0.1,
-        },
-      });
-      eventId = event.id;
-    }
 
     await this.prismaService.sourceEntry.create({
       data: {
         sourceId: source.id,
         artistId: source.artistId,
-        eventId,
         url,
         externalId: pollExternalId,
         title,
+        processed: false,
       },
     });
+  }
+
+  async processSourceEntries() {
+    const entries = await this.prismaService.sourceEntry.findMany({
+      where: { processed: false },
+      orderBy: { ingestedAt: 'asc' },
+    });
+
+    this.logger.log(`Processing ${entries.length} unprocessed source entries`);
+
+    for (const entry of entries) {
+      const rawData = entry.rawData as SourceItem | null;
+      const artistId = entry.artistId;
+
+      if (!artistId) {
+        await this.prismaService.sourceEntry.update({
+          where: { id: entry.id },
+          data: { processed: true },
+        });
+        continue;
+      }
+
+      const hasRequiredFields =
+        rawData &&
+        rawData.title &&
+        (rawData.startAt || rawData.dateText) &&
+        rawData.city &&
+        rawData.country;
+
+      if (!hasRequiredFields) {
+        await this.prismaService.sourceEntry.update({
+          where: { id: entry.id },
+          data: { processed: true },
+        });
+        continue;
+      }
+
+      const event = await this.prismaService.event.create({
+        data: {
+          artistId,
+          name: rawData.title,
+          startAt: rawData.startAt ?? undefined,
+          dateText: rawData.dateText ?? undefined,
+          timezone: rawData.timezone ?? undefined,
+          city: rawData.city,
+          country: rawData.country,
+          ticketUrl: rawData.ticketUrl ?? undefined,
+          priceMin: rawData.priceMin ?? undefined,
+          priceMax: rawData.priceMax ?? undefined,
+          currency: rawData.currency ?? undefined,
+          confidence: entry.confidence ?? 0.5,
+        },
+      });
+
+      await this.prismaService.sourceEntry.update({
+        where: { id: entry.id },
+        data: { eventId: event.id, processed: true },
+      });
+    }
   }
 
   private getPollExternalId() {
@@ -219,5 +242,15 @@ export class IngestionService {
     const minutes = now.getUTCMinutes();
 
     return minutes % this.config.pollIntervalMinutes === 0;
+  }
+
+  public getArtist(artistName: string) {
+    if (!this.ticketmasterClient) {
+      this.logger.warn(
+        'Ticketmaster source found but no API key configured — skipping',
+      );
+      return;
+    }
+    return this.ticketmasterClient.searchAttractions(artistName);
   }
 }

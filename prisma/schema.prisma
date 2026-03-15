@@ -51,10 +51,12 @@ model SourceEntry {
   url         String
   title       String?
   externalId  String?
+  rawData     Json?
   publishedAt DateTime?
   ingestedAt  DateTime  @default(now())
   contentHash String?
   confidence  Float?
+  processed   Boolean   @default(false)
   source      Source    @relation(fields: [sourceId], references: [id])
   artist      Artist?   @relation(fields: [artistId], references: [id])
   event       Event?    @relation(fields: [eventId], references: [id])
@@ -62,6 +64,7 @@ model SourceEntry {
   @@index([sourceId])
   @@index([artistId])
   @@index([eventId])
+  @@index([processed])
   @@unique([sourceId, externalId])
 }
 
