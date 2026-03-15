@@ -38,8 +38,8 @@ const seedArtists = [
       },
       {
         type: SourceType.EVENT_API,
-        name: 'Songkick',
-        url: 'https://www.songkick.com/',
+        name: 'Ticketmaster',
+        externalId: 'K8vZ9171hL0',
       },
     ],
   },
@@ -63,20 +63,22 @@ const seedArtists = [
       },
       {
         type: SourceType.EVENT_API,
-        name: 'Songkick',
-        url: 'https://www.songkick.com/',
+        name: 'Ticketmaster',
+        externalId: 'K8vZ9171FkV',
       },
     ],
   },
 ];
 
-async function ensureSource(artistId: string, source: (typeof seedArtists)[0]['sources'][0]) {
+async function ensureSource(
+  artistId: string,
+  source: (typeof seedArtists)[0]['sources'][0],
+) {
   const existing = await prisma.source.findFirst({
     where: {
       artistId,
       type: source.type,
       name: source.name,
-      url: source.url,
     },
   });
 
@@ -89,7 +91,8 @@ async function ensureSource(artistId: string, source: (typeof seedArtists)[0]['s
       artistId,
       type: source.type,
       name: source.name,
-      url: source.url,
+      url: 'url' in source ? source.url : undefined,
+      externalId: 'externalId' in source ? source.externalId : undefined,
     },
   });
 }

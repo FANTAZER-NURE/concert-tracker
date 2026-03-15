@@ -1,11 +1,13 @@
 import { Module } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { HttpModule, HttpService } from '@nestjs/axios';
 import { ScheduleModule } from '@nestjs/schedule';
 import { IngestionController } from './ingestion.controller';
 import { IngestionService } from './ingestion.service';
+import { TicketmasterClient } from './ticketmaster/ticketmaster.client';
 
 @Module({
-  imports: [ScheduleModule.forRoot()],
+  imports: [ScheduleModule.forRoot(), HttpModule],
   controllers: [IngestionController],
   providers: [
     IngestionService,
@@ -22,6 +24,17 @@ import { IngestionService } from './ingestion.service';
       useFactory: (configService: ConfigService) =>
         configService.get<string>('NODE_ENV') !== 'test',
       inject: [ConfigService],
+    },
+    {
+      provide: 'TICKETMASTER_CLIENT',
+      useFactory: (configService: ConfigService, httpService: HttpService) => {
+        const apiKey = configService.get<string>('TICKETMASTER_API_KEY');
+        if (!apiKey) {
+          return undefined;
+        }
+        return new TicketmasterClient(httpService, apiKey);
+      },
+      inject: [ConfigService, HttpService],
     },
   ],
 })

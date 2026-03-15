@@ -7,6 +7,7 @@ const envSchema = z.object({
   PORT: z.coerce.number().int().positive().default(3000),
   DATABASE_URL: z.string().min(1),
   POLL_INTERVAL_MINUTES: z.coerce.number().int().positive().default(60),
+  TICKETMASTER_API_KEY: z.string().min(1).optional(),
 });
 
 @Module({
