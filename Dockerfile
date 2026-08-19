@@ -32,4 +32,4 @@ RUN yarn install --frozen-lockfile --production \
 COPY --from=build /app/dist ./dist
 
 EXPOSE 8080
-CMD ["node", "dist/main"]
+CMD ["node", "dist/main.js"]
