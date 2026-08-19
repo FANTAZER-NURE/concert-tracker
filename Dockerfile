@@ -8,10 +8,11 @@ RUN apt-get update \
   && corepack prepare yarn@1.22.22 --activate
 
 COPY package.json yarn.lock ./
+COPY prisma ./prisma
 RUN yarn install --frozen-lockfile
 
 COPY . .
-RUN npx prisma generate && yarn build
+RUN yarn build
 
 FROM node:22-bookworm-slim
 WORKDIR /app
