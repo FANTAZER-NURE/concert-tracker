@@ -1,0 +1,10 @@
+[build]
+builder = "railpack"
+buildCommand = "npx prisma generate && yarn build"
+
+[deploy]
+preDeployCommand = ["npx prisma migrate deploy"]
+startCommand = "yarn start:prod"
+healthcheckPath = "/health"
+healthcheckTimeout = 30
+restartPolicyType = "ON_FAILURE"
