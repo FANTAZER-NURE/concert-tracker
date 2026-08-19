@@ -52,4 +52,32 @@ describe('SourcesService', () => {
       },
     });
   });
+
+  it('creates a Ticketmaster source when the artist has none', async () => {
+    const created = {
+      id: 's1',
+      artistId: 'a1',
+      name: 'Ticketmaster',
+      externalId: 'K8vZ9171hL0',
+    };
+    const prismaMock = {
+      source: {
+        findFirst: jest.fn().mockResolvedValue(null),
+        create: jest.fn().mockResolvedValue(created),
+      },
+    };
+    const service = new SourcesService(prismaMock as never);
+
+    await expect(
+      service.ensureTicketmaster('a1', 'K8vZ9171hL0'),
+    ).resolves.toEqual(created);
+    expect(prismaMock.source.create).toHaveBeenCalledWith({
+      data: {
+        artistId: 'a1',
+        type: SourceType.EVENT_API,
+        name: 'Ticketmaster',
+        externalId: 'K8vZ9171hL0',
+      },
+    });
+  });
 });

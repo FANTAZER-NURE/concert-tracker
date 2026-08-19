@@ -12,6 +12,48 @@ export class EventsService {
     });
   }
 
+  async listRecentAndUpcoming(artistId: string, now = new Date()) {
+    const recentSince = new Date(now);
+    recentSince.setUTCDate(recentSince.getUTCDate() - 180);
+
+    const showSelect = {
+      startAt: true,
+      dateText: true,
+      city: true,
+      country: true,
+      ticketUrl: true,
+      venue: { select: { name: true } },
+    } as const;
+
+    const [upcomingRows, recentRows] = await Promise.all([
+      this.prismaService.event.findMany({
+        where: {
+          artistId,
+          OR: [{ startAt: { gte: now } }, { startAt: null }],
+        },
+        orderBy: { startAt: 'asc' },
+        take: 9,
+        select: showSelect,
+      }),
+      this.prismaService.event.findMany({
+        where: {
+          artistId,
+          startAt: { lt: now, gte: recentSince },
+        },
+        orderBy: { startAt: 'desc' },
+        take: 6,
+        select: showSelect,
+      }),
+    ]);
+
+    return {
+      upcoming: upcomingRows.slice(0, 8),
+      upcomingHasMore: upcomingRows.length > 8,
+      recent: recentRows.slice(0, 5),
+      recentHasMore: recentRows.length > 5,
+    };
+  }
+
   create(input: CreateEventInput) {
     const startAt = new Date(input.startAt);
     const endAt = input.endAt ? new Date(input.endAt) : undefined;

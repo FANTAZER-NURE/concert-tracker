@@ -151,6 +151,14 @@ async function main() {
 
     await ensureSubscription(user.id, artist.id);
   }
+
+  // Kansas (cmsykly9a0006re0j3xe1ec34) may already exist from ingestion.
+  const kansas = await prisma.artist.findUnique({
+    where: { name: 'Kansas' },
+  });
+  if (kansas) {
+    await ensureSubscription(user.id, kansas.id);
+  }
 }
 
 main()

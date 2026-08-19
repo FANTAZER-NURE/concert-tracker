@@ -16,6 +16,7 @@ export type TicketmasterEventsPage = {
 export type TicketmasterAttraction = {
   id: string;
   name: string;
+  upcomingCount: number;
 };
 
 @Injectable()
@@ -84,10 +85,17 @@ export class TicketmasterClient {
 
     const attractions = data?._embedded?.attractions ?? [];
 
-    return attractions.map((a: { id: string; name: string }) => ({
-      id: a.id,
-      name: a.name,
-    }));
+    return attractions.map(
+      (a: {
+        id: string;
+        name: string;
+        upcomingEvents?: { _total?: number };
+      }) => ({
+        id: a.id,
+        name: a.name,
+        upcomingCount: a.upcomingEvents?._total ?? 0,
+      }),
+    );
   }
 }
 

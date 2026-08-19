@@ -8,6 +8,7 @@ const envSchema = z.object({
   DATABASE_URL: z.string().min(1),
   POLL_INTERVAL_MINUTES: z.coerce.number().int().positive().default(60),
   TICKETMASTER_API_KEY: z.string().min(1).optional(),
+  TELEGRAM_BOT_TOKEN: z.string().min(1).optional(),
 });
 
 @Module({

@@ -6,8 +6,10 @@ import { AppConfigModule } from './config/config.module';
 import { DatabaseModule } from './database/database.module';
 import { EventsModule } from './events/events.module';
 import { IngestionModule } from './ingestion/ingestion.module';
+import { NotificationsModule } from './notifications/notifications.module';
 import { SourcesModule } from './sources/sources.module';
 import { SubscriptionsModule } from './subscriptions/subscriptions.module';
+import { TelegramModule } from './telegram/telegram.module';
 
 @Module({
   imports: [
@@ -17,6 +19,8 @@ import { SubscriptionsModule } from './subscriptions/subscriptions.module';
     SourcesModule,
     EventsModule,
     SubscriptionsModule,
+    NotificationsModule,
+    TelegramModule,
     IngestionModule,
   ],
   controllers: [AppController],

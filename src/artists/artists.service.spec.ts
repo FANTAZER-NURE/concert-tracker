@@ -19,6 +19,37 @@ describe('ArtistsService', () => {
     });
   });
 
+  it('returns active artists ordered by name', async () => {
+    const artists = [{ id: '1', name: 'Eminem', isActive: true }];
+    const prismaMock = {
+      artist: {
+        findMany: jest.fn().mockResolvedValue(artists),
+      },
+    };
+    const service = new ArtistsService(prismaMock as never);
+
+    await expect(service.listActive()).resolves.toEqual(artists);
+    expect(prismaMock.artist.findMany).toHaveBeenCalledWith({
+      where: { isActive: true },
+      orderBy: { name: 'asc' },
+    });
+  });
+
+  it('finds an active artist by id', async () => {
+    const artist = { id: '1', name: 'Eminem', isActive: true };
+    const prismaMock = {
+      artist: {
+        findFirst: jest.fn().mockResolvedValue(artist),
+      },
+    };
+    const service = new ArtistsService(prismaMock as never);
+
+    await expect(service.findActiveById('1')).resolves.toEqual(artist);
+    expect(prismaMock.artist.findFirst).toHaveBeenCalledWith({
+      where: { id: '1', isActive: true },
+    });
+  });
+
   it('creates an artist by name', async () => {
     const created = { id: '1', name: 'Eminem' };
     const prismaMock = {

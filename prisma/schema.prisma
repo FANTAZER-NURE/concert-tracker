@@ -15,6 +15,12 @@ enum SourceType {
   FEED
 }
 
+enum NotificationStatus {
+  PENDING
+  SENT
+  FAILED
+}
+
 model Artist {
   id          String        @id @default(cuid())
   name        String        @unique
@@ -57,6 +63,7 @@ model SourceEntry {
   contentHash String?
   confidence  Float?
   processed   Boolean   @default(false)
+  skipReason  String?
   source      Source    @relation(fields: [sourceId], references: [id])
   artist      Artist?   @relation(fields: [artistId], references: [id])
   event       Event?    @relation(fields: [eventId], references: [id])
@@ -100,9 +107,10 @@ model Event {
   confidence Float?
   createdAt  DateTime     @default(now())
   updatedAt  DateTime     @updatedAt
-  artist     Artist       @relation(fields: [artistId], references: [id])
-  venue      Venue?       @relation(fields: [venueId], references: [id])
-  sources    SourceEntry[]
+  artist        Artist         @relation(fields: [artistId], references: [id])
+  venue         Venue?         @relation(fields: [venueId], references: [id])
+  sources       SourceEntry[]
+  notifications Notification[]
 
   @@index([artistId])
   @@index([startAt])
@@ -116,9 +124,10 @@ model User {
   lastName     String?
   languageCode String?
   isActive     Boolean        @default(true)
-  createdAt    DateTime       @default(now())
-  updatedAt    DateTime       @updatedAt
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
   subscriptions Subscription[]
+  notifications Notification[]
 }
 
 model Subscription {
@@ -132,10 +141,29 @@ model Subscription {
   isActive  Boolean  @default(true)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  user      User     @relation(fields: [userId], references: [id])
-  artist    Artist   @relation(fields: [artistId], references: [id])
+  user          User           @relation(fields: [userId], references: [id])
+  artist        Artist         @relation(fields: [artistId], references: [id])
+  notifications Notification[]
 
   @@index([userId])
   @@index([artistId])
   @@unique([userId, artistId, continent, country, city, radiusKm])
+}
+
+model Notification {
+  id             String             @id @default(cuid())
+  eventId        String
+  userId         String
+  subscriptionId String
+  status         NotificationStatus @default(PENDING)
+  createdAt      DateTime           @default(now())
+  updatedAt      DateTime           @updatedAt
+  event          Event              @relation(fields: [eventId], references: [id])
+  user           User               @relation(fields: [userId], references: [id])
+  subscription   Subscription       @relation(fields: [subscriptionId], references: [id])
+
+  @@unique([eventId, userId])
+  @@index([eventId])
+  @@index([userId])
+  @@index([subscriptionId])
 }

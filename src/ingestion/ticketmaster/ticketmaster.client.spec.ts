@@ -175,7 +175,11 @@ describe('TicketmasterClient', () => {
         axiosResponse({
           _embedded: {
             attractions: [
-              { id: 'K8vZ9171oZ7', name: 'Eminem' },
+              {
+                id: 'K8vZ9171oZ7',
+                name: 'Eminem',
+                upcomingEvents: { _total: 4 },
+              },
               { id: 'K8vZ917abc', name: 'Eminem Tribute' },
             ],
           },
@@ -186,8 +190,8 @@ describe('TicketmasterClient', () => {
       const results = await client.searchAttractions('Eminem');
 
       expect(results).toEqual([
-        { id: 'K8vZ9171oZ7', name: 'Eminem' },
-        { id: 'K8vZ917abc', name: 'Eminem Tribute' },
+        { id: 'K8vZ9171oZ7', name: 'Eminem', upcomingCount: 4 },
+        { id: 'K8vZ917abc', name: 'Eminem Tribute', upcomingCount: 0 },
       ]);
     });
 

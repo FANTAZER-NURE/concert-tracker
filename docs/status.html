@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Concert Tracker — status</title>
+  <style>
+    :root {
+      --ink: #1a1612;
+      --paper: #f4efe4;
+      --card: #fffdf8;
+      --rule: #d4cbb8;
+      --muted: #6b6256;
+      --red: #b42318;
+      --green: #2f6b3a;
+      --amber: #8a5a12;
+      --stub: #f3d9a8;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--paper);
+      color: var(--ink);
+      font: 16px/1.5 "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+    }
+    header {
+      border-bottom: 4px double var(--ink);
+      padding: 2.2rem 1.4rem 1.4rem;
+      max-width: 52rem;
+      margin: 0 auto;
+    }
+    header p.kicker {
+      margin: 0 0 0.4rem;
+      font: 12px/1.3 ui-monospace, "SF Mono", Menlo, monospace;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--red);
+    }
+    h1 {
+      margin: 0 0 0.5rem;
+      font-size: 2rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+    header .meta {
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+    main {
+      max-width: 52rem;
+      margin: 0 auto;
+      padding: 1.6rem 1.4rem 3.5rem;
+    }
+    h2 {
+      margin: 2rem 0 0.7rem;
+      font-size: 1.15rem;
+      border-bottom: 1px solid var(--ink);
+      padding-bottom: 0.25rem;
+    }
+    p { margin: 0 0 0.85rem; }
+    .lead { font-size: 1.15rem; }
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 0.7rem;
+      margin: 1rem 0 1.4rem;
+    }
+    .stat {
+      background: var(--card);
+      border: 1px solid var(--rule);
+      padding: 0.85rem 0.9rem 0.75rem;
+    }
+    .stat b {
+      display: block;
+      font: 11px/1.2 ui-monospace, "SF Mono", Menlo, monospace;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--muted);
+      margin-bottom: 0.3rem;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.95rem;
+      background: var(--card);
+    }
+    th, td {
+      text-align: left;
+      padding: 0.45rem 0.55rem;
+      border-bottom: 1px solid var(--rule);
+      vertical-align: top;
+    }
+    th {
+      font: 11px/1.2 ui-monospace, "SF Mono", Menlo, monospace;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--muted);
+    }
+    .done { color: var(--green); font-weight: 600; }
+    .partial { color: var(--amber); font-weight: 600; }
+    .none { color: var(--red); font-weight: 600; }
+    ol { padding-left: 1.2rem; }
+    li { margin-bottom: 0.4rem; }
+    code {
+      font: 0.86em/1.4 ui-monospace, "SF Mono", Menlo, monospace;
+      background: #efe8d6;
+      padding: 0.05em 0.3em;
+    }
+    .ticket {
+      background: var(--stub);
+      border: 1px dashed var(--ink);
+      padding: 0.9rem 1rem;
+      margin: 1rem 0 1.3rem;
+    }
+    .ticket strong { display: block; margin-bottom: 0.25rem; }
+    footer {
+      max-width: 52rem;
+      margin: 0 auto;
+      padding: 0 1.4rem 2.5rem;
+      color: var(--muted);
+      font-size: 0.85rem;
+    }
+    a { color: var(--ink); }
+    @media (max-width: 640px) {
+      .grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <p class="kicker">Pet project snapshot · 18 Aug 2026</p>
+    <h1>Concert Tracker</h1>
+    <p class="meta">NestJS API · last commit 15 Mar 2026 · <code>94de3d9</code> add processing step</p>
+  </header>
+  <main>
+    <p class="lead">You built the backend spine and stopped in the middle of ingestion. Ticketmaster events can land in Postgres. Nothing notifies anyone yet.</p>
+
+    <div class="grid">
+      <div class="stat"><b>Stage</b>Steps 1–5 of 13, incomplete</div>
+      <div class="stat"><b>Surface</b>API only. No bot, no UI, no CI</div>
+      <div class="stat"><b>Idle</b>~5 months since last commit</div>
+    </div>
+
+    <div class="ticket">
+      <strong>Where you left off</strong>
+      On 15 Mar you added <code>processSourceEntries()</code>. After a poll, unprocessed Ticketmaster <code>SourceEntry</code> rows with title, date, city, and country become <code>Event</code> rows. That is the last working feature.
+    </div>
+
+    <h2>What exists</h2>
+    <table>
+      <thead>
+        <tr><th>Piece</th><th>State</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Nest 11, Prisma 6, Postgres 16, Zod config, Docker Compose</td><td class="done">Done</td></tr>
+        <tr><td>Schema: Artist, Source, SourceEntry, Event, Venue, User, Subscription</td><td class="done">Done</td></tr>
+        <tr><td>HTTP list + create for artists, sources, events, subscriptions</td><td class="partial">Partial — no update / deactivate / merge</td></tr>
+        <tr><td>Seed: Eminem, RHCP, social URLs, Ticketmaster attraction ids, test Telegram user</td><td class="done">Done</td></tr>
+        <tr><td>In-process poll every 60s, gated by <code>POLL_INTERVAL_MINUTES</code></td><td class="partial">Partial — no queue or retries</td></tr>
+        <tr><td>Ticketmaster Discovery client (events + attraction search)</td><td class="done">Done</td></tr>
+        <tr><td>Turn Ticketmaster <code>rawData</code> into Event rows</td><td class="partial">Partial — see holes below</td></tr>
+        <tr><td>Unit specs on the modules you wrote</td><td class="done">Done</td></tr>
+      </tbody>
+    </table>
+
+    <h2>What is missing</h2>
+    <table>
+      <thead>
+        <tr><th>Spec step</th><th>State</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>1 CI</td><td class="none">Not started</td></tr>
+        <tr><td>4 Queue, retries, connector interface</td><td class="none">Not started</td></tr>
+        <tr><td>5 Second API / official sites</td><td class="none">Not started</td></tr>
+        <tr><td>6 AI relevance + extraction</td><td class="none">Not started</td></tr>
+        <tr><td>7 Geocoding, venues, continent</td><td class="none">Not started</td></tr>
+        <tr><td>8 Event dedup across sources</td><td class="none">Not started</td></tr>
+        <tr><td>9 Subscription matching + message compose</td><td class="none">Not started</td></tr>
+        <tr><td>10 Telegram bot</td><td class="none">Not started</td></tr>
+        <tr><td>11 Admin review queue</td><td class="none">Not started</td></tr>
+        <tr><td>12 Metrics / announcement eval set</td><td class="none">Not started</td></tr>
+        <tr><td>13 Deploy</td><td class="none">Not started</td></tr>
+      </tbody>
+    </table>
+
+    <h2>Holes in the last step</h2>
+    <ul>
+      <li>Venue fields from Ticketmaster never create a <code>Venue</code> row.</li>
+      <li>Continent is never set, so NA/US subscriptions cannot match on stored events yet.</li>
+      <li>Incomplete <code>SourceEntry</code> rows are marked <code>processed=true</code> and dropped.</li>
+      <li>Social sources in seed get a daily stub entry, then that stub is discarded.</li>
+      <li>Same show from two sources would become two events.</li>
+      <li>Connector choice is <code>source.name === 'Ticketmaster'</code>.</li>
+    </ul>
+
+    <h2>Resume order</h2>
+    <ol>
+      <li>Fix processing: persist venues, keep incomplete entries open, add a simple event identity key.</li>
+      <li>Replace the Ticketmaster name check with a connector interface.</li>
+      <li>Add one more structured API before websites or an LLM.</li>
+      <li>Match new events to subscriptions and send a Telegram message.</li>
+      <li>Then sites / extraction, admin queue, CI, deploy.</li>
+    </ol>
+
+    <p>Wiki: <a href="index.md">docs/index.md</a>. Scratch tasks: <code>tasks/</code> (gitignored).</p>
+  </main>
+  <footer>
+    Generated from the repo on 18 Aug 2026. Five commits, 8 Feb–15 Mar 2026.
+  </footer>
+</body>
+</html>

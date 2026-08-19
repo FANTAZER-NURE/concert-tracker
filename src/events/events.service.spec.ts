@@ -53,4 +53,42 @@ describe('EventsService', () => {
       },
     });
   });
+
+  it('lists upcoming and recent shows for an artist', async () => {
+    const now = new Date('2026-08-18T12:00:00Z');
+    const prismaMock = {
+      event: {
+        findMany: jest
+          .fn()
+          .mockResolvedValueOnce([])
+          .mockResolvedValueOnce([]),
+      },
+    };
+    const service = new EventsService(prismaMock as never);
+
+    await expect(
+      service.listRecentAndUpcoming('artist-1', now),
+    ).resolves.toEqual({
+      upcoming: [],
+      upcomingHasMore: false,
+      recent: [],
+      recentHasMore: false,
+    });
+    expect(prismaMock.event.findMany).toHaveBeenNthCalledWith(1, {
+      where: {
+        artistId: 'artist-1',
+        OR: [{ startAt: { gte: now } }, { startAt: null }],
+      },
+      orderBy: { startAt: 'asc' },
+      take: 9,
+      select: {
+        startAt: true,
+        dateText: true,
+        city: true,
+        country: true,
+        ticketUrl: true,
+        venue: { select: { name: true } },
+      },
+    });
+  });
 });

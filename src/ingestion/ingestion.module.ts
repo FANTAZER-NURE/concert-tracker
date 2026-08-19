@@ -1,13 +1,23 @@
 import { Module } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { HttpModule, HttpService } from '@nestjs/axios';
+import { HttpModule } from '@nestjs/axios';
 import { ScheduleModule } from '@nestjs/schedule';
+import { NotificationsModule } from '../notifications/notifications.module';
+import { SOURCE_CONNECTORS } from './connectors/source-connector';
+import { TicketmasterConnector } from './connectors/ticketmaster.connector';
 import { IngestionController } from './ingestion.controller';
 import { IngestionService } from './ingestion.service';
+import { TICKETMASTER_CLIENT } from './ticketmaster/ticketmaster.constants';
 import { TicketmasterClient } from './ticketmaster/ticketmaster.client';
+import { TicketmasterModule } from './ticketmaster/ticketmaster.module';
 
 @Module({
-  imports: [ScheduleModule.forRoot(), HttpModule],
+  imports: [
+    ScheduleModule.forRoot(),
+    HttpModule,
+    NotificationsModule,
+    TicketmasterModule,
+  ],
   controllers: [IngestionController],
   providers: [
     IngestionService,
@@ -26,16 +36,19 @@ import { TicketmasterClient } from './ticketmaster/ticketmaster.client';
       inject: [ConfigService],
     },
     {
-      provide: 'TICKETMASTER_CLIENT',
-      useFactory: (configService: ConfigService, httpService: HttpService) => {
-        const apiKey = configService.get<string>('TICKETMASTER_API_KEY');
-        if (!apiKey) {
-          return undefined;
-        }
-        return new TicketmasterClient(httpService, apiKey);
-      },
-      inject: [ConfigService, HttpService],
+      provide: TicketmasterConnector,
+      useFactory: (ticketmasterClient?: TicketmasterClient) =>
+        new TicketmasterConnector(ticketmasterClient),
+      inject: [TICKETMASTER_CLIENT],
+    },
+    {
+      provide: SOURCE_CONNECTORS,
+      useFactory: (ticketmasterConnector: TicketmasterConnector) => [
+        ticketmasterConnector,
+      ],
+      inject: [TicketmasterConnector],
     },
   ],
+  exports: [IngestionService],
 })
 export class IngestionModule {}
