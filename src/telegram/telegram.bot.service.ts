@@ -34,21 +34,33 @@ export class TelegramBotService implements OnModuleInit, OnModuleDestroy {
       return;
     }
 
-    this.bot = new Bot(token);
-    this.register(this.bot);
-    await this.bot.api.setMyCommands([
-      { command: 'start', description: 'Open the menu' },
-      { command: 'subscribe', description: 'Add an artist to watch' },
-      { command: 'subscriptions', description: 'What you already watch' },
-      { command: 'artists', description: 'Add an artist to watch' },
-      { command: 'shows', description: 'Recent and upcoming concerts' },
-      { command: 'help', description: 'How to add an artist' },
-      { command: 'stop', description: 'Pause alerts' },
-    ]);
-    void this.bot.start({
-      onStart: (info) =>
-        this.logger.log(`Telegram bot @${info.username} polling`),
-    });
+    void this.startPolling(token);
+  }
+
+  private async startPolling(token: string) {
+    try {
+      this.bot = new Bot(token);
+      this.register(this.bot);
+      await this.bot.api.setMyCommands([
+        { command: 'start', description: 'Open the menu' },
+        { command: 'subscribe', description: 'Add an artist to watch' },
+        { command: 'subscriptions', description: 'What you already watch' },
+        { command: 'artists', description: 'Add an artist to watch' },
+        { command: 'shows', description: 'Recent and upcoming concerts' },
+        { command: 'help', description: 'How to add an artist' },
+        { command: 'stop', description: 'Pause alerts' },
+      ]);
+      await this.bot.start({
+        onStart: (info) =>
+          this.logger.log(`Telegram bot @${info.username} polling`),
+      });
+    } catch (error) {
+      this.logger.error(
+        error instanceof Error ? error.message : error,
+        error instanceof Error ? error.stack : undefined,
+        'Telegram bot failed to start',
+      );
+    }
   }
 
   async onModuleDestroy() {
