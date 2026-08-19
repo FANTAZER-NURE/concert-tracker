@@ -1,10 +1,10 @@
 [build]
-builder = "railpack"
-buildCommand = "npx prisma generate && yarn build"
+builder = "DOCKERFILE"
+dockerfilePath = "Dockerfile"
 
 [deploy]
 preDeployCommand = ["npx prisma migrate deploy"]
-startCommand = "yarn start:prod"
+startCommand = "node dist/main"
 healthcheckPath = "/health"
-healthcheckTimeout = 30
+healthcheckTimeout = 100
 restartPolicyType = "ON_FAILURE"
